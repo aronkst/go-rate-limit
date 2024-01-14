@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.LoadConfig(".env")
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("error reading configuration file: %v", err)
 	}

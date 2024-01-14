@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -20,14 +21,18 @@ type Config struct {
 	CustomBlockDuration       map[string]time.Duration
 }
 
-func LoadConfig(path string) (*Config, error) {
-	viper.SetConfigFile(path)
-	viper.AutomaticEnv()
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		return nil, err
+func LoadConfig() (*Config, error) {
+	if os.Getenv("ENV_TEST") == "true" {
+		viper.AutomaticEnv()
+	} else {
+		viper.SetConfigFile(".env")
+		err := viper.ReadInConfig()
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	var err error
 
 	cfg := &Config{
 		RedisAddress:              viper.GetString("REDIS_ADDRESS"),
