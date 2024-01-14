@@ -79,10 +79,30 @@ Certifique-se de ter o Docker instalado no seu sistema. Você pode baixar e inst
 ## Configuração
 
 - Clone o repositório.
-- Configure o arquivo `.env` ou defina as variáveis de ambiente conforme necessário.
+- Configure o arquivo `.env` conforme necessário.
 
 ## Executando o Projeto
 
 ```bash
 docker compose up
+```
+
+## Testes
+
+Este comando realiza uma requisição HTTP GET sem um token de acesso:
+
+```bash
+curl http://localhost:8080/
+```
+
+Para testar com um token de acesso, você deve incluir o token no cabeçalho da requisição. No exemplo abaixo, estamos usando o token `abc123`, que é um token de exemplo. Substitua `abc123` pelo seu próprio token de acesso ao realizar o teste.
+
+```bash
+curl -H "API_KEY: abc123" http://localhost:8080/
+```
+
+Para inserir seu próprio token nos testes, substitua `abc123` no comando curl pelo token que você deseja testar. O token deve ser passado no cabeçalho da requisição usando a chave API_KEY. Por exemplo, se o seu token for `meuToken123`, o comando curl ficaria:
+
+```bash
+curl -H "API_KEY: meuToken123" http://localhost:8080/
 ```
