@@ -1,108 +1,108 @@
 # Go Rate Limiter
 
-## Visão Geral
+## Overview
 
-Este projeto envolve o desenvolvimento de um limitador de taxa em Go, que pode ser configurado para limitar o número máximo de requisições por segundo com base em um endereço IP específico ou um token de acesso. O objetivo do limitador é controlar o tráfego de serviços web de forma eficiente.
+This project involves the development of a rate limiter in Go, which can be configured to limit the maximum number of requests per second based on a specific IP address or an access token. The goal of the limiter is to efficiently control web service traffic.
 
-## Características
+## Features
 
-- **Limitação por Endereço IP**: Restringe requisições de um único endereço IP dentro de um intervalo de tempo definido.
-- **Limitação por Token de Acesso**: Limita requisições com base em tokens de acesso únicos, permitindo diferentes limites de tempo de expiração para diferentes tokens. Os tokens devem ser fornecidos no cabeçalho como API_KEY.
-- **Configurações Sobrepostas**: As configurações do token de acesso têm prioridade sobre as configurações de endereço IP.
-- **Integração com Middleware**: Funciona como um middleware injetado no servidor web.
-- **Configuração de Limite de Requisições**: Permite definir o número máximo de requisições por tempo.
-- **Duração do Bloqueio**: Opção para definir a duração do tempo de bloqueio para IP ou Token após exceder os limites de requisição.
-- **Configurações de Variáveis de Ambiente**: As configurações de limite podem ser feitas por meio de variáveis de ambiente ou um arquivo .env na pasta raiz.
-- **Resposta HTTP ao Exceder o Limite**: Responde com o código HTTP 429 e uma mensagem indicando a superação do número máximo de requisições.
-- **Banco de Dados Redis**: Utiliza Redis para armazenar e consultar informações do limitador.
-- **Estratégia de Persistência Flexível**: Padrão de estratégia para alternar facilmente entre o Redis e outros mecanismos de persistência.
-- **Lógica do Limiter Separada**: A lógica do limitador é independente do middleware.
-- **Configurações de Quantidade de Requisições para Lista de IPs ou Tokens**: Opção para definir um IP ou Token individual o seu número máximo de requisições por tempo.
-- **Configurações de Duração do Bloqueio para Lista de IPs ou Tokens**: Opção para definir um IP ou Token individual o seu tempo de bloqueio.
+- **IP Address Limitation**: Restricts requests from a single IP address within a defined time interval.
+- **Access Token Limitation**: Limits requests based on unique access tokens, allowing different expiration time limits for different tokens. Tokens must be provided in the header as API_KEY.
+- **Overlapping Settings**: Access token settings take precedence over IP address settings.
+- **Integration with Middleware**: Functions as a middleware injected into the web server.
+- **Request Limit Configuration**: Allows setting the maximum number of requests per time.
+- **Block Duration**: Option to define the duration of the block time for IP or Token after exceeding request limits.
+- **Environment Variable Settings**: Limit settings can be made through environment variables or a .env file in the root folder.
+- **HTTP Response When Limit Exceeded**: Responds with HTTP code 429 and a message indicating that the maximum number of requests has been exceeded.
+- **Redis Database**: Uses Redis to store and query limiter information.
+- **Flexible Persistence Strategy**: Strategy standard for easily switching between Redis and other persistence mechanisms.
+- **Separate Limiter Logic**: The limiter logic is independent of the middleware.
+- **Request Quantity Settings for IP or Token List**: Option to set an individual IP or Token its maximum number of requests per time.
+- **Block Duration Settings for IP or Token List**: Option to set an individual IP or Token its block time.
 
-## Exemplos de Uso
+## Usage Examples
 
-- **Exemplo de Limitação por IP**: Se configurado para um máximo de 5 requisições por segundo por IP, a 6ª requisição do IP 192.168.1.1 dentro de um segundo deve ser bloqueada.
-- **Exemplo de Limitação por Token**: Se um token `abc123` estiver configurado com um limite de 10 requisições por segundo, a 11ª requisição dentro desse segundo deve ser bloqueada.
-- **Tempo de Expiração**: Após atingir o limite, novas requisições do mesmo IP ou token só são possíveis após o tempo de expiração.
-- **Configuração Personalizada por IP**: Suponha que o `CUSTOM_MAX_REQ_PER_SEC` esteja configurado com "192.168.1.2=2", isso significa que o IP 192.168.1.2 terá um limite personalizado de 2 requisições por tempo, independente do limite padrão para outros IPs.
-- **Configuração Personalizada por Token**: Se `CUSTOM_MAX_REQ_PER_SEC` incluir "token123=8", isso indica que o token `token123` tem um limite personalizado de 8 requisições por tempo, que pode ser diferente do limite padrão para outros tokens.
-- **Duração de Bloqueio Personalizada**: Usando `CUSTOM_BLOCK_DURATION` com "192.168.1.2=30s", o IP 192.168.1.2 será bloqueado por 30 segundos após exceder seu limite de requisições, que é uma configuração específica diferente do bloqueio padrão.
-- **Bloqueio Personalizado para Token**: Por exemplo, com "token123=1m" em `CUSTOM_BLOCK_DURATION`, o token `token123` enfrentará um bloqueio de 1 minuto após atingir seu limite de requisições.
+- **IP Limitation Example**: If configured for a maximum of 5 requests per second per IP, the 6th request from IP 192.168.1.1 within a second should be blocked.
+- **Access Token Limitation Example**: If a token `abc123` is set with a limit of 10 requests per second, the 11th request within that second should be blocked.
+- **Expiration Time**: After reaching the limit, new requests from the same IP or token are only possible after the expiration time.
+- **Custom IP Configuration**: Suppose `CUSTOM_MAX_REQ_PER_SEC` is set with "192.168.1.2=2", this means IP 192.168.1.2 will have a custom limit of 2 requests per time, regardless of the standard limit for other IPs.
+- **Custom Token Configuration**: If `CUSTOM_MAX_REQ_PER_SEC` includes "token123=8", this indicates that the token `token123` has a custom limit of 8 requests per time, which may be different from the standard limit for other tokens.
+- **Custom Block Duration**: Using `CUSTOM_BLOCK_DURATION` with "192.168.1.2=30s", IP 192.168.1.2 will be blocked for 30 seconds after exceeding its request limit, which is a specific setting different from the standard block.
+- **Custom Block for Token**: For example, with "token123=1m" in `CUSTOM_BLOCK_DURATION`, the token `token123` will face a block of 1 minute after reaching its request limit.
 
-## Variáveis de Ambiente
+## Environment Variables
 
-A configuração do rate limiter é gerenciada através das seguintes variáveis de ambiente. Cada uma desempenha um papel crucial no controle e personalização do comportamento do limitador de taxa:
+The configuration of the rate limiter is managed through the following environment variables. Each plays a crucial role in controlling and customizing the behavior of the rate limiter:
 
-- **REDIS_ADDRESS**: Define o endereço do servidor Redis utilizado pelo limitador de taxa.
-- **REDIS_PASSWORD**: Senha para autenticação no servidor Redis.
-- **REDIS_DB**: Número do banco de dados Redis a ser utilizado pelo aplicativo.
-- **DEFAULT_IP_MAX_REQ_PER_SEC**: Define o limite padrão de requisições por segundo por endereço IP. Este valor é aplicado a todos os IPs, a menos que uma configuração personalizada seja especificada.
-- **DEFAULT_TOKEN_MAX_REQ_PER_SEC**: Estabelece o limite padrão de requisições por segundo por token de acesso. Esse limite é aplicado a todos os tokens, exceto aqueles com configurações personalizadas.
-- **DEFAULT_IP_BLOCK_DURATION**: Duração do bloqueio padrão para um endereço IP que excede seu limite de requisições. Especificado em um formato de duração, como 10s para dez segundos.
-- **DEFAULT_TOKEN_BLOCK_DURATION**: Duração do bloqueio padrão para um token que excede seu limite de requisições, especificado no mesmo formato de duração que o bloqueio de IP.
-- **CUSTOM_MAX_REQ_PER_SEC**: Permite a definição de limites de requisição personalizados para IPs ou tokens específicos. Formato esperado: `ip_ou_token=valor;outro_ip_ou_token=valor`, por exemplo, `127.0.0.1=2;abc123=10`.
-- **CUSTOM_BLOCK_DURATION**: Configura durações de bloqueio personalizadas para IPs ou tokens específicos. O formato é similar ao CUSTOM_MAX_REQ_PER_SEC, por exemplo, `127.0.0.1=30s;abc123=1m`.
+- **REDIS_ADDRESS**: Defines the address of the Redis server used by the rate limiter.
+- **REDIS_PASSWORD**: Password for authentication on the Redis server.
+- **REDIS_DB**: Number of the Redis database to be used by the application.
+- **DEFAULT_IP_MAX_REQ_PER_SEC**: Defines the standard limit of requests per second by IP address. This value is applied to all IPs unless a custom setting is specified.
+- **DEFAULT_TOKEN_MAX_REQ_PER_SEC**: Establishes the standard limit of requests per second by access token. This limit is applied to all tokens except those with custom settings.
+- **DEFAULT_IP_BLOCK_DURATION**: Standard block duration for an IP address that exceeds its request limit. Specified in a duration format, such as 10s for ten seconds.
+- **DEFAULT_TOKEN_BLOCK_DURATION**: Standard block duration for a token that exceeds its request limit, specified in the same duration format as the IP block.
+- **CUSTOM_MAX_REQ_PER_SEC**: Allows setting custom request limits for specific IPs or tokens. Expected format: `ip_or_token=value;another_ip_or_token=value`, for example, `127.0.0.1=2;abc123=10`.
+- **CUSTOM_BLOCK_DURATION**: Sets custom block durations for specific IPs or tokens. The format is similar to CUSTOM_MAX_REQ_PER_SEC, for example, `127.0.0.1=30s;abc123=1m`.
 
-Estas variáveis são fundamentais para a flexibilidade e eficácia do limitador, permitindo uma adaptação às necessidades específicas. É importante definir essas variáveis de forma apropriada para garantir que o sistema funcione como esperado.
+These variables are fundamental to the flexibility and effectiveness of the limiter, allowing adaptation to specific needs. It's important to set these variables appropriately to ensure the system functions as expected.
 
-## Funcionamento do Rate Limit
+## Rate Limit Operation
 
-O Rate Limiter é implementado como um middleware no servidor HTTP, permitindo que ele intercepte e controle as requisições.
+The Rate Limiter is implemented as a middleware in the HTTP server, allowing it to intercept and control requests.
 
-### Middleware de Rate Limiting
+### Rate Limiting Middleware
 
-- O middleware `RateLimiterMiddleware` é aplicado a cada requisição recebida pelo servidor.
-- Ele identifica cada requisição por um identificador único, que pode ser um token de acesso (se presente no cabeçalho API_KEY) ou o endereço IP do solicitante.
-- Após identificar a requisição, o middleware consulta o `RateLimit`, uma estrutura que contém as configurações de limitação e o Redis para verificar se o limite foi excedido.
+- The `RateLimiterMiddleware` middleware is applied to every request received by the server.
+- It identifies each request by a unique identifier, which can be an access token (if present in the API_KEY header) or the requester's IP address.
+- After identifying the request, the middleware consults the `RateLimit`, a structure that contains the limitation settings and Redis to check if the limit has been exceeded.
 
-### Verificação e Controle de Limite
+### Limit Check and Control
 
-- A função `IsLimitExceeded` da estrutura `RateLimit` é responsável por determinar se uma requisição excede o limite configurado.
-- Ela verifica o número atual de requisições feitas pelo identificador (IP ou token) no Redis.
-- Com base no identificador, a função determina o limite máximo de requisições permitidas por segundo `maxReqPerSec` e a duração do bloqueio `blockDuration`. Esses valores podem ser configurados de forma personalizada para cada IP ou token ou utilizar os valores default.
-- Se o número de requisições já feitas for maior ou igual ao limite permitido, a função indica que o limite foi excedido.
+- The `IsLimitExceeded` function of the `RateLimit` structure is responsible for determining if a request exceeds the configured limit.
+- It checks the current number of requests made by the identifier (IP or token) in Redis.
+- Based on the identifier, the function determines the maximum number of allowed requests per second `maxReqPerSec` and the block duration `blockDuration`. These values can be customized for each IP or token or use the default values.
+- If the number of requests already made is greater than or equal to the permitted limit, the function indicates that the limit has been exceeded.
 
-### Resposta a Requisições Excessivas
+### Response to Excessive Requests
 
-- Se o limite for excedido, o middleware responde imediatamente com um erro HTTP 429 "you have reached the maximum number of requests or actions allowed within a certain time frame", indicando ao cliente que o limite de requisições foi atingido.
-- Em caso de erros internos (por exemplo, falha ao acessar o armazenamento), o middleware responde com um erro HTTP 500.
+- If the limit is exceeded, the middleware immediately responds with an HTTP 429 error "you have reached the maximum number of requests or actions allowed within a certain time frame", indicating to the client that the request limit has been reached.
+- In case of internal errors (for example, failure to access storage), the middleware responds with an HTTP 500 error.
 
-### Incremento de Contagem de Requisição
+### Request Count Increment
 
-- Para cada requisição válida que não excede o limite, o contador de requisições no armazenamento é incrementado. Este contador é usado para rastrear o número de requisições feitas pelo identificador dentro do intervalo de tempo especificado.
+- For each valid request that does not exceed the limit, the request counter in storage is incremented. This counter is used to track the number of requests made by the identifier within the specified time interval.
 
-## Pré-requisitos
+## Prerequisites
 
-Certifique-se de ter o Docker instalado no seu sistema. Você pode baixar e instalar o Docker a partir do [site oficial do Docker](https://www.docker.com/).
+Make sure Docker is installed on your system. You can download and install Docker from the [official Docker website](https://www.docker.com/).
 
-## Configuração
+## Setup
 
-- Clone o repositório.
-- Configure o arquivo `.env` conforme necessário.
+- Clone the repository.
+- Configure the `.env` file as needed.
 
-## Executando o Projeto
+## Running the Project
 
 ```bash
 docker compose up
 ```
 
-## Testes
+## Tests
 
-Este comando realiza uma requisição HTTP GET sem um token de acesso:
+This command performs an HTTP GET request without an access token:
 
 ```bash
 curl http://localhost:8080/
 ```
 
-Para testar com um token de acesso, você deve incluir o token no cabeçalho da requisição. No exemplo abaixo, estamos usando o token `abc123`, que é um token de exemplo. Substitua `abc123` pelo seu próprio token de acesso ao realizar o teste.
+To test with an access token, you must include the token in the request header. In the example below, we are using the token `abc123`, which is an example token. Replace `abc123` with your own access token when performing the test.
 
 ```bash
 curl -H "API_KEY: abc123" http://localhost:8080/
 ```
 
-Para inserir seu próprio token nos testes, substitua `abc123` no comando curl pelo token que você deseja testar. O token deve ser passado no cabeçalho da requisição usando a chave API_KEY. Por exemplo, se o seu token for `meuToken123`, o comando curl ficaria:
+To insert your own token in the tests, replace `abc123` in the curl command with the token you wish to test. The token should be passed in the request header using the API_KEY key. For example, if your token is `myToken123`, the curl command would be:
 
 ```bash
-curl -H "API_KEY: meuToken123" http://localhost:8080/
+curl -H "API_KEY: myToken123" http://localhost:8080/
 ```
