@@ -1,7 +1,5 @@
 # Go Rate Limiter
 
-## Overview
-
 This project involves the development of a rate limiter in Go, which can be configured to limit the maximum number of requests per second based on a specific IP address or an access token. The goal of the limiter is to efficiently control web service traffic.
 
 ## Features
